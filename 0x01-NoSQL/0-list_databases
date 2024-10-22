@@ -1,0 +1,3 @@
+//List all databases in the server
+service mongod start
+show dbs
