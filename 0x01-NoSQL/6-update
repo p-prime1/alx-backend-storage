@@ -1,0 +1,2 @@
+//Script adds  a new attrinite t0 a document
+db.school.update({"name" : "Holberton"} , {$set : {"address" : "972 Mission street}})
