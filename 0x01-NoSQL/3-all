@@ -1,0 +1,2 @@
+//retrieves all document in a colleciton
+db.school.find()
