@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
 import redis
 import uuid
+from functools import wraps
 from typing import Union, Optional, Callable, Any
 
 """Module conatains a cache class"""
+
+
+def count_calls(method: Callable) -> Callable:
+    """A decorator func"""
+    @wraps(method)
+    def increment(self, *args, **kwargs):
+        """Increments based on the number of times method was called"""
+        self._redis.incr(method.__qualname__)
+        return method(self, *args, **kwargs)
+    return increment
 
 
 class Cache:
@@ -13,13 +24,14 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Stores data in Redis and returns a generated key.
 
         Args:
             data (str, bytes, int, float): To be passed to the class
 
-        Return 
+        Return
             (str): Generated key
         """
         key = str(uuid.uuid4())
@@ -51,7 +63,8 @@ class Cache:
             key (str) : The key to retrive
 
         Returns:
-            Optional[str]: The value converted to a strign or None if it doesnt exist
+            Optional[str]: The value converted to a strign or None
+            if it doesnt exist
             """
         return self.get(key, str)
 
@@ -62,6 +75,7 @@ class Cache:
             key (int): The key to retrieve
 
         Returns:
-            Optional[str]: The value converted to a string or None if it doesnt exist
+            Optional[str]: The value converted to a string or None if
+            it doesnt exist
             """
         return self.get(key, int)
