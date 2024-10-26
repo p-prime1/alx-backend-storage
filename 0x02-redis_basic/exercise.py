@@ -7,6 +7,18 @@ from typing import Union, Optional, Callable, Any
 """Module conatains a cache class"""
 
 
+def call_history(method: Callable) -> Callable:
+    """A decoratro func thats takes note of inputs and outputs"""
+    @wraps(method)
+    def input_list(self, *args):
+        """Appends the list of inputs"""
+        self._redis.rpush(method.__qualname__ + ":inputs", str(args))
+        output = method(self, *args)
+        self._redis.rpush(method.__qualname__ + ":outputs", str(output))
+        return output
+    return input_list
+    
+    
 def count_calls(method: Callable) -> Callable:
     """A decorator func"""
     @wraps(method)
@@ -25,6 +37,7 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Stores data in Redis and returns a generated key.
 
