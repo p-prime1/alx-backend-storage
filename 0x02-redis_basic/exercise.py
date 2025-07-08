@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import redis
 import uuid
-from typing import Union
+from typing import Union, Optional, Any
 """Module to test and practice working with redis in python"""
 
 
@@ -18,3 +18,22 @@ class Cache():
         key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
+
+    
+    def get(self, key: string, fn: Optional[Callable]) -> Any:
+        """Retrieves the value of the key from Redis, and 
+            applies an optional converstion function"""
+        value = self._redis.get(key)
+        if value is None:
+            return None
+        return fn(value) if fn else value
+
+    
+    def get_str(self, key: str) -> Optional[str]:
+        """Method converts return value to a string"""
+        return self.get(key, lambda d: d.decode('utf-8'))
+
+    
+    def get_int(self, key: str) -> Optional[int]:
+        """Method converts return value to an int"""
+        return self.get(key, lambda d: int(d))
