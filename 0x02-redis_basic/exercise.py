@@ -2,8 +2,18 @@
 import redis
 import uuid
 from typing import Union, Optional, Any
+from functools import wraps
 """Module to test and practice working with redis in python"""
 
+
+def count_calls(method: Callable) -> Callable:
+    """A decorator function"""
+    @wraps(method)
+    def increment(self, *args, **kwargs):
+        """Function increments each time the method is called"""
+        self._redis.incr(method.__qualname__, 1)
+        return method(self, *args, **kwargs)
+    return increment
 
 class Cache():
     """Cache clase used to store data in a redis-server"""
@@ -12,7 +22,7 @@ class Cache():
         self._redis = redis.Redis()
         self._redis.flushdb()
 
-
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Method stores data and returns the key"""
         key = str(uuid.uuid4())
